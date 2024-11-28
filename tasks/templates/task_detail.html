@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Título de la tarea -->
+    <h1 class="text-center mb-4 text-primary">{{ task.companyname }}</h1>
+
+    <!-- Card principal -->
+    <div class="card shadow-sm border-light">
+        <div class="card-body">
+            <!-- Información de la tarea -->
+            <h5 class="card-title text-primary mb-3">
+                <strong>Trabajo a realizar:</strong> {{ task.workreason }}
+            </h5>
+            <p class="card-text mb-3">
+                <strong>Creada por:</strong> {{ task.user.username }}<br>
+                <strong>Fecha de creación:</strong> {{ task.created|date:'M j, Y H:i' }}<br>
+                {% if task.datecompleted %}
+                    <strong>Fecha completada:</strong> {{ task.datecompleted|date:'M j, Y H:i' }}<br>
+                {% endif %}
+            </p>
+
+            <!-- Alerta si la tarea es importante -->
+            {% if task.important %}
+            <div class="alert alert-warning mb-3">
+                <strong>¡Esta es una tarea importante!</strong>
+            </div>
+            {% endif %}
+
+            <!-- Mostrar documentos si están presentes -->
+            <div class="mb-3">
+                {% if task.payment_pdf %}
+                    <p><strong>PDF de Pago:</strong> <a href="{{ task.payment_pdf.url }}" target="_blank">Ver PDF</a></p>
+                {% endif %}
+                {% if task.payment_image %}
+                    <p><strong>Imagen de Pago:</strong> <a href="{{ task.payment_image.url }}" target="_blank">Ver Imagen</a></p>
+                {% endif %}
+                {% if task.payment_xml %}
+                    <p><strong>XML de Pago:</strong> <a href="{{ task.payment_xml.url }}" target="_blank">Ver XML</a></p>
+                {% endif %}
+            </div>
+
+            <!-- Mensajes de error -->
+            {% if error %}
+            <div class="alert alert-danger mb-3">{{ error }}</div>
+            {% endif %}
+
+            <!-- Formulario para actualizar tarea -->
+            {% if not task.datecompleted %}
+            <form method="POST" enctype="multipart/form-data" class="mb-4">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="companyname" class="form-label">Nombre de la Empresa</label>
+                    <input type="text" name="companyname" id="companyname" class="form-control" value="{{ form.companyname.value|default_if_none:'' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="workreason" class="form-label">Razón del Trabajo</label>
+                    <input type="text" name="workreason" id="workreason" class="form-control" value="{{ form.workreason.value|default_if_none:'' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Descripción</label>
+                    <textarea name="description" id="description" class="form-control">{{ form.description.value|default_if_none:'' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="payment" class="form-label">Pago</label>
+                    <input type="number" name="payment" id="payment" class="form-control" value="{{ form.payment.value|default_if_none:0 }}">
+                </div>
+
+                <!-- Campo para marcar como importante -->
+                <div class="mb-3 form-check">
+                    <label for="important" class="form-check-label">
+                        Marcar como importante
+                    </label>
+                    {{ form.important }}
+                </div>
+
+                <!-- Campos para subir archivos -->
+                <div class="mb-3">
+                    <label for="payment_pdf" class="form-label">PDF de Pago (Opcional)</label>
+                    <input type="file" name="payment_pdf" id="payment_pdf" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="payment_image" class="form-label">Imagen de Pago (Opcional)</label>
+                    <input type="file" name="payment_image" id="payment_image" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="payment_xml" class="form-label">XML de Pago (Opcional)</label>
+                    <input type="file" name="payment_xml" id="payment_xml" class="form-control">
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Actualizar Tarea</button>
+            </form>
+
+            <!-- Botón para marcar tarea como completada -->
+            <form action="{% url 'complete_task' task.id %}" method="POST" class="mb-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success w-100" onclick="return confirm('¿Marcar como completada?')">Marcar como Completada</button>
+            </form>
+            {% else %}
+            <!-- Botón para desmarcar tarea como completada -->
+            <form action="{% url 'uncomplete_task' task.id %}" method="POST" class="mb-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning w-100" onclick="return confirm('¿Desmarcar como completada?')">Desmarcar como Completada</button>
+            </form>
+            {% endif %}
+
+            <!-- Botón para eliminar tarea -->
+            <form action="{% url 'delete_task' task.id %}" method="POST" class="mb-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger w-100" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar Tarea</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

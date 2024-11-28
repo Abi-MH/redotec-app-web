@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center text-primary mb-4">Gestión de Tareas</h1>
+
+    <!-- Sección de tareas pendientes -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-warning text-white">
+            <h2 class="mb-0">Tareas Pendientes</h2>
+        </div>
+        <div class="card-body">
+            {% if tasks_pending %}
+            <div class="list-group">
+                {% for task in tasks_pending %}
+                <a href="{% url 'task_detail' task.id %}" class="list-group-item list-group-item-action">
+                    <h5 class="mb-1 text-dark"><strong>{{ task.companyname }}</strong></h5>
+                    <p class="mb-0 text-muted">{{ task.workreason }}</p>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center">No hay tareas pendientes.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sección de tareas completadas -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h2 class="mb-0">Tareas Completadas</h2>
+        </div>
+        <div class="card-body">
+            {% if tasks_completed %}
+            <div class="list-group">
+                {% for task in tasks_completed %}
+                <a href="{% url 'task_detail' task.id %}" class="list-group-item list-group-item-action">
+                    <h5 class="mb-1 text-dark"><strong>{{ task.companyname }}</strong></h5>
+                    <p class="mb-0 text-muted">{{ task.workreason }}</p>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center">No hay tareas completadas.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

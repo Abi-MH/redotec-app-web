@@ -1,0 +1,130 @@
+/* style.css */
+body {
+    background-color: #aed6f1;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Asegura que el cuerpo abarca toda la ventana */
+    font-family: 'Roboto Condensed', sans-serif; /* Aplica una fuente predeterminada */
+}
+
+main {
+    flex: 1; /* Hace que el contenido principal ocupe el espacio restante */
+    padding: 15px;
+}
+
+.navbar {
+    background-color: #2e86c1;
+    display: flex;
+    flex-wrap: wrap; /* Permite que los elementos se ajusten en varias líneas */
+    padding: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navbar-brand {
+    color: #3498db;
+    font-size: 2.5rem; /* Ajuste de tamaño para ser responsive */
+    font-weight: 800;
+    font-family: 'Parkinsans', sans-serif;
+    margin: 0;
+}
+
+.nav-link {
+    color: #034460;
+    font-size: 1rem;
+    font-family: 'Roboto Condensed', sans-serif;
+    margin: 0 10px;
+}
+
+.nav-link:hover {
+    color: #808b96;
+}
+
+footer {
+    background-color: #343a40; /* Fondo oscuro */
+    color: #ffffff; /* Texto blanco */
+    text-align: center;
+    padding: 10px 0;
+}
+
+.card {
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    max-width: 90%; /* Limita el ancho de la tarjeta en pantallas pequeñas */
+    margin: auto; /* Centra las tarjetas horizontalmente */
+}
+
+.card-title {
+    font-family: 'Parkinsans', sans-serif;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #034460;
+    text-align: center;
+}
+
+.card-footer {
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+    padding: 10px;
+}
+
+.btn {
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    text-align: center;
+    display: inline-block;
+    margin: 5px auto;
+}
+
+textarea {
+    resize: vertical; /* Permite cambiar el tamaño solo en altura */
+    width: 100%; /* Se adapta al contenedor */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 2rem; /* Reduce el tamaño en pantallas más pequeñas */
+    }
+
+    .nav-link {
+        font-size: 0.9rem;
+        margin: 5px; /* Menor separación entre enlaces */
+    }
+
+    .card {
+        max-width: 100%; /* Ocupa todo el ancho en pantallas pequeñas */
+    }
+
+    .card-title {
+        font-size: 1rem; /* Reduce el tamaño del título */
+    }
+
+    .btn {
+        font-size: 0.9rem;
+        padding: 8px 15px; /* Ajusta los botones */
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar-brand {
+        font-size: 1.8rem; /* Ajuste adicional para móviles */
+    }
+
+    .nav-link {
+        font-size: 0.8rem;
+    }
+
+    .card-title {
+        font-size: 0.9rem; /* Más pequeño para pantallas muy pequeñas */
+    }
+
+    .btn {
+        font-size: 0.8rem;
+        padding: 5px 10px; /* Más compacto */
+    }
+}

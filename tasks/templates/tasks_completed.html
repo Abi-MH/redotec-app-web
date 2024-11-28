@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4 text-success">Tareas Completadas</h1>
+
+    {% if tasks %}
+    <div class="row">
+        {% for task in tasks %}
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <a href="{% url 'task_detail' task.id %}" class="text-decoration-none">
+                            {% if task.datecompleted %}
+                                <strong>{{ task.companyname }}</strong>
+                            {% else %}
+                                {{ task.companyname }}
+                            {% endif %}
+                        </a>
+                    </h5>
+                    <p class="card-text">
+                        <strong>Usuario:</strong> {{ task.user.username }}<br>
+                        <strong>Trabajo:</strong> {{ task.workreason }}<br>
+                        <strong>Completada:</strong> {{ task.datecompleted|date:"M d, Y" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <strong>No hay tareas completadas por el momento.</strong>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
