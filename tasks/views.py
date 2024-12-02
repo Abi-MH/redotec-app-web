@@ -3,6 +3,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
+
+from tasks.google_drive_utils import upload_to_drive
 from .forms import TaskForm
 from django.http import HttpResponse
 from .models import Task
@@ -68,16 +70,30 @@ def create_task(request):
         })
     else:
         try:
-            form = TaskForm(request.POST, request.FILES)  # request.FILES añadido para archivos
-            new_task = form.save(commit=False)
-            new_task.user = request.user
-            new_task.save()
-            return redirect('tasks')
+            form = TaskForm(request.POST, request.FILES)  # Asegúrate de que los archivos se manejen aquí
+            if form.is_valid():
+                new_task = form.save(commit=False)
+                new_task.user = request.user
+                new_task.save()
+
+                # Subir los archivos a Google Drive
+                if new_task.payment_pdf:
+                    upload_to_drive(new_task.payment_pdf.path, new_task.payment_pdf.name)
+                if new_task.payment_image:
+                    upload_to_drive(new_task.payment_image.path, new_task.payment_image.name)
+                if new_task.payment_xml:
+                    upload_to_drive(new_task.payment_xml.path, new_task.payment_xml.name)
+
+                return redirect('tasks')
+            else:
+                return render(request, 'create_task.html', {
+                    'form': form,
+                    'error': 'Por favor, ingresa campos válidos.'
+                })
         except ValueError:
-            print(form.errors)  # Esto te mostrará los errores específicos en consola
             return render(request, 'create_task.html', {
                 'form': form,
-                'error': 'Por favor, ingresa campos válidos.'
+                'error': 'No se pudo guardar la tarea. Intenta nuevamente.'
             })
 
 @login_required
@@ -173,6 +189,7 @@ def task_list(request):
         'tasks_completed': tasks_completed,
     })
     
+@login_required
 def update_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
 
