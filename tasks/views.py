@@ -8,9 +8,11 @@ from django.http import HttpResponse
 from .models import Task
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from .google_drive_utils import upload_to_drive
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from google.oauth2.service_account import Credentials
 import os
-
+from django.conf import settings
 
 
 # Create your views here.
@@ -178,19 +180,60 @@ def task_list(request):
     })
 
 @login_required
-def update_task(request, task_id):
-    # Tu lógica actual para manejar formularios
-    if request.method == 'POST' and request.FILES:
-        uploaded_file = request.FILES['payment_pdf']  # Cambia según el archivo específico
-        local_file_path = f'media/{uploaded_file.name}'  # Guarda temporalmente
 
-        with open(local_file_path, 'wb+') as destination:
-            for chunk in uploaded_file.chunks():
-                destination.write(chunk)
 
-        # Subir el archivo a Google Drive
-        drive_file_id = upload_to_drive(local_file_path, uploaded_file.name)
-        print(f'Archivo subido a Google Drive con ID: {drive_file_id}')
+def upload_to_drive(file_path, file_name, folder_id=None):
+    """
+    Sube un archivo a Google Drive.
+    :param file_path: Ruta local del archivo.
+    :param file_name: Nombre del archivo en Google Drive.
+    :param folder_id: ID de la carpeta en Google Drive (opcional).
+    :return: ID del archivo subido.
+    """
+    # Ruta al archivo temporal de credenciales
+    credentials_path = os.path.join(settings.BASE_DIR, 'google-drive-service-account.json')
 
-        # Limpia el archivo local si lo deseas
-        os.remove(local_file_path)
+    # Carga las credenciales
+    credentials = Credentials.from_service_account_file(credentials_path)
+    drive_service = build('drive', 'v3', credentials=credentials)
+
+    # Metadatos del archivo
+    file_metadata = {'name': file_name}
+    if folder_id:
+        file_metadata['parents'] = [folder_id]
+
+    # Preparar el archivo para subir
+    media = MediaFileUpload(file_path, resumable=True)
+
+    # Subir el archivo
+    file = drive_service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id'
+    ).execute()
+
+    return file.get('id')
+
+def set_file_public(file_id):
+    """
+    Hace que un archivo sea público.
+    :param file_id: ID del archivo en Google Drive.
+    """
+    # Ruta al archivo temporal de credenciales
+    credentials_path = os.path.join(settings.BASE_DIR, 'google-drive-service-account.json')
+
+    # Carga las credenciales
+    credentials = Credentials.from_service_account_file(credentials_path)
+    drive_service = build('drive', 'v3', credentials=credentials)
+
+    # Crear el permiso
+    permission = {
+        'type': 'anyone',
+        'role': 'reader'
+    }
+
+    # Aplicar el permiso
+    drive_service.permissions().create(
+        fileId=file_id,
+        body=permission
+    ).execute()
