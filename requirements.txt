@@ -11,3 +11,5 @@ typing_extensions==4.12.2
 tzdata==2024.2
 whitenoise==6.8.2
 google-api-python-client==2.100.0  # o la versión más reciente
+google-auth-httplib2
+google-auth-oauthlib

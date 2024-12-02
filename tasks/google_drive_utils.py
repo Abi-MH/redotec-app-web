@@ -3,13 +3,10 @@ from googleapiclient.http import MediaFileUpload
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from googleapiclient.errors import HttpError
-
 # Asegúrate de que tu archivo de credenciales de Google esté configurado correctamente
 import os
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
-
-from tasks.views import set_file_public
 
 def get_drive_service():
     # Leer la ruta del archivo de credenciales desde la variable de entorno
@@ -25,6 +22,25 @@ def get_drive_service():
     # Construir el servicio de Google Drive
     service = build('drive', 'v3', credentials=creds)
     return service
+
+def set_file_public(file_id):
+    try:
+        service = get_drive_service()
+
+        # Actualizar los permisos para hacer el archivo público
+        permissions = {
+            'role': 'reader',  # Para que sea público, debe ser "reader"
+            'type': 'anyone'   # 'anyone' significa cualquier persona puede ver el archivo
+        }
+
+        # Crear el permiso
+        service.permissions().create(
+            fileId=file_id,
+            body=permissions
+        ).execute()
+        print(f"Archivo con ID {file_id} ahora es público.")
+    except HttpError as error:
+        print(f"An error occurred while setting file as public: {error}")
 
 def upload_to_drive(file_path, file_name):
     try:

@@ -250,25 +250,21 @@ def download_file_from_drive(request, file_id):
     
 @login_required
 def set_file_public(file_id):
-    """
-    Hace que un archivo sea público.
-    :param file_id: ID del archivo en Google Drive.
-    """
-    # Ruta al archivo temporal de credenciales
-    credentials_path = os.path.join(settings.BASE_DIR, 'google-drive-service-account.json')
+    try:
+        service = get_drive_service()
 
-    # Carga las credenciales
-    credentials = Credentials.from_service_account_file(credentials_path)
-    drive_service = build('drive', 'v3', credentials=credentials)
+        # Hacer que el archivo sea público
+        permission = {
+            'type': 'anyone',
+            'role': 'reader',
+        }
 
-    # Crear el permiso
-    permission = {
-        'type': 'anyone',
-        'role': 'reader'
-    }
+        # Establecer los permisos del archivo
+        service.permissions().create(
+            fileId=file_id,
+            body=permission
+        ).execute()
 
-    # Aplicar el permiso
-    drive_service.permissions().create(
-        fileId=file_id,
-        body=permission
-    ).execute()
+        print(f"El archivo con ID {file_id} ahora es público.")
+    except Exception as e:
+        print(f"Error al hacer público el archivo: {e}")
