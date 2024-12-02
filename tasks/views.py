@@ -69,44 +69,24 @@ def tasks_completed(request):
 
 @login_required
 def create_task(request):
-    if request.method == 'GET':
-        return render(request, 'create_task.html', {
-            'form': TaskForm()
-        })
-    else:
-        try:
-            form = TaskForm(request.POST, request.FILES)  # request.FILES añadido para manejar archivos
-            if form.is_valid():
-                new_task = form.save(commit=False)
-                new_task.user = request.user
+    if request.method == 'POST':
+        form = TaskForm(request.POST, request.FILES)  # Asegúrate de que request.FILES esté en el formulario
+        if form.is_valid():
+            new_task = form.save(commit=False)
+            new_task.user = request.user
 
-                # Subir los archivos a Google Drive
-                if new_task.payment_pdf:
-                    file_id_pdf = upload_to_drive(new_task.payment_pdf.path, new_task.payment_pdf.name)
-                    new_task.payment_pdf = None  # Elimina el archivo local después de subirlo
+            # Subir los archivos a Google Drive
+            if new_task.payment_image:  # Verifica que haya un archivo antes de intentar cargarlo
+                file_id_image = upload_to_drive(new_task.payment_image.path, new_task.payment_image.name)
+                new_task.payment_image = None  # Elimina el archivo local después de subirlo
 
-                if new_task.payment_image:
-                    file_id_image = upload_to_drive(new_task.payment_image.path, new_task.payment_image.name)
-                    new_task.payment_image = None  # Elimina el archivo local después de subirlo
+            new_task.save()
+            return redirect('tasks')
+        else:
+            return render(request, 'create_task.html', {'form': form, 'error': 'Formulario no válido.'})
 
-                if new_task.payment_xml:
-                    file_id_xml = upload_to_drive(new_task.payment_xml.path, new_task.payment_xml.name)
-                    new_task.payment_xml = None  # Elimina el archivo local después de subirlo
-
-                new_task.save()  # Guarda la tarea
-                return redirect('tasks')  # Redirige a la lista de tareas
-            else:
-                return render(request, 'create_task.html', {
-                    'form': form,
-                    'error': 'Por favor, ingresa campos válidos.'
-                })
-        except ValueError:
-            print(form.errors)  # Esto te mostrará los errores específicos en consola
-            return render(request, 'create_task.html', {
-                'form': form,
-                'error': 'Hubo un error al procesar el formulario.'
-            })
-            
+    return render(request, 'create_task.html', {'form': TaskForm()})
+           
 @login_required
 def task_detail(request, task_id):
     task = get_object_or_404(Task, pk=task_id)  # Obtén la tarea existente
