@@ -3,8 +3,8 @@ from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
-#
-from tasks.google_drive_utils import download_file_from_drive
+import io
+from googleapiclient.http import MediaIoBaseDownload
 
 # Asegúrate de que tu archivo de credenciales de Google esté configurado correctamente
 def get_drive_service():
@@ -56,3 +56,20 @@ def upload_to_drive(file_path, file_name):
         return file
     except HttpError as error:
         print(f"An error occurred: {error}")
+
+def download_file_from_drive(file_id):
+    try:
+        service = get_drive_service()  # Usar la función get_drive_service definida aquí
+        file = service.files().get(fileId=file_id).execute()
+        file_name = file['name']
+        request = service.files().get_media(fileId=file_id)
+        fh = io.BytesIO()
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+        fh.seek(0)
+        return fh.read()
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return None

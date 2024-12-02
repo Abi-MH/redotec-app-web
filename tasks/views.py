@@ -3,72 +3,52 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from tasks.google_drive_utils import upload_to_drive
+from tasks.google_drive_utils import upload_to_drive, download_file_from_drive
 from .forms import TaskForm
 from django.http import HttpResponse
 from .models import Task
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
-from google_drive_utils import download_file_from_drive  # Asegúrate de que esta función exista
 
 # Create your views here.
-#def hello(request):
- #   return render(request, 'signup.html',
-  #                {'form':UserCreationForm})
- #usaremos los forms que trae django
- #  para utilizar esta tecnologia que lo integra
-def home (request):
-    return render(request,'home.html')
+def home(request):
+    return render(request, 'home.html')
 
-def signup (request):
-    if request.method== 'GET':
-        return render(request, 'signup.html',{
-            'form':UserCreationForm
-        })
+def signup(request):
+    if request.method == 'GET':
+        return render(request, 'signup.html', {'form': UserCreationForm})
     else:
-        if request.POST['password1']==request.POST['password2']:            
+        if request.POST['password1'] == request.POST['password2']:            
             try:
-                #registro de usuario
-                user = User.objects.create_user(username=request.POST['username'],password=request.POST['password1'])
+                # Registro de usuario
+                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'])
                 user.save()
                 login(request, user)
                 return redirect('tasks')
-                #return HttpResponse('Usuario creado correctamente')
             except IntegrityError:    
-               return render(request, 'signup.html',{
-            'form':UserCreationForm,
-            "error":'El usuario ya existe'
-        })     
-        return render(request, 'signup.html',{
-            'form':UserCreationForm,
-            "error":'Las contraseñas no coinciden'
+                return render(request, 'signup.html', {
+                    'form': UserCreationForm,
+                    'error': 'El usuario ya existe'
+                })     
+        return render(request, 'signup.html', {
+            'form': UserCreationForm,
+            'error': 'Las contraseñas no coinciden'
         })
 
 @login_required
 def tasks(request):
-    # Cambié 'task' a 'tasks' para que coincida con el contexto
-   # tasks = Task.objects.all()   # Obtener todas las tareas
-    #return render(request, 'tasks.html', {'tasks': tasks})  # Pasar la variable correcta al contexto
-    # Filtra las tareas que no están completadas
     tasks = Task.objects.filter(datecompleted__isnull=True)
     return render(request, 'tasks.html', {'tasks': tasks})
 
 @login_required
 def tasks_completed(request):
-    # Cambié 'task' a 'tasks' para que coincida con el contexto
-   # tasks = Task.objects.all()   # Obtener todas las tareas
-    #return render(request, 'tasks.html', {'tasks': tasks})  # Pasar la variable correcta al contexto
-    # Filtra las tareas que no están completadas
     tasks = Task.objects.filter(datecompleted__isnull=False).order_by('-datecompleted')
     return render(request, 'tasks_completed.html', {'tasks': tasks})
 
 @login_required
 def create_task(request):
     if request.method == 'GET':
-        return render(request, 'create_task.html', {
-            'form': TaskForm()
-        })
+        return render(request, 'create_task.html', {'form': TaskForm()})
     else:
         try:
             form = TaskForm(request.POST, request.FILES)  # Asegúrate de que los archivos se manejen aquí
@@ -99,20 +79,18 @@ def create_task(request):
 
 @login_required
 def task_detail(request, task_id):
-    task = get_object_or_404(Task, pk=task_id)  # Obtén la tarea existente
+    task = get_object_or_404(Task, pk=task_id)
 
     if request.method == 'GET':
         form = TaskForm(instance=task)
         return render(request, 'task_detail.html', {
             'task': task, 
             'form': form,
-            'is_completed': task.datecompleted is not None,  # Determina si está completada
+            'is_completed': task.datecompleted is not None,
         })
     else:
         try:
-            # Maneja datos POST y archivos
             form = TaskForm(request.POST, request.FILES, instance=task)
-            
             if form.is_valid():
                 form.save()
                 return redirect('tasks')
@@ -131,7 +109,6 @@ def task_detail(request, task_id):
                 'error': "No se pudo actualizar la tarea. Intenta nuevamente."
             })
 
-# Vista para marcar la tarea como completada
 @login_required
 def complete_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
@@ -139,8 +116,7 @@ def complete_task(request, task_id):
         task.datecompleted = timezone.now()
         task.save()
         return redirect('task_detail', task_id=task_id)
-    
-# Vista para desmarcar la tarea como completada (esto es lo que necesitas)
+
 @login_required
 def uncomplete_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
@@ -152,35 +128,26 @@ def uncomplete_task(request, task_id):
 @login_required
 def delete_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id)    
-    
     if request.method == 'POST':
-        # Marcar la tarea como eliminada
         task.delete()
-        
-        # Redirige a la vista de tareas (se refrescará y no mostrará la tarea eliminada)
         return redirect('tasks')
 
 @login_required
-def signout (request):
+def signout(request):
     logout(request)
-    return redirect ('home')
+    return redirect('home')
 
 def signin(request):
     if request.method == 'GET':
-        return render(request,'signin.html',{
-        'form':AuthenticationForm
-        })
+        return render(request, 'signin.html', {'form': AuthenticationForm})
     else:
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
         if user is None:
-            return render(request,'signin.html',{
-            'form':AuthenticationForm,
-            'error':'El usuario o contraseña son incorrectas'
-        })
+            return render(request, 'signin.html', {'form': AuthenticationForm, 'error': 'El usuario o contraseña son incorrectas'})
         else:
-            login(request, user)#Guardamos la sesion si todo esta bien
-            return redirect('tasks')        
-            
+            login(request, user)
+            return redirect('tasks')
+
 @login_required
 def task_list(request):
     tasks_pending = Task.objects.filter(datecompleted__isnull=True)
@@ -189,24 +156,21 @@ def task_list(request):
         'tasks_pending': tasks_pending,
         'tasks_completed': tasks_completed,
     })
-    
+
 @login_required
 def update_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
-
     if request.method == 'POST':
         form = TaskForm(request.POST, request.FILES, instance=task)
         if form.is_valid():
-            form.save()  # Guarda la tarea actualizada
+            form.save()
             return redirect('task_detail', task.id)
-
     else:
         form = TaskForm(instance=task)
-
     return render(request, 'task_detail.html', {'task': task, 'form': form})
 
 @login_required
-def download_file_from_drive(request, file_id):
+def download_file_from_drive_view(request, file_id):
     # Lógica para descargar el archivo de Google Drive
-    file = download_file_from_drive(file_id)  # Aquí llamas a la función que descarga el archivo
+    file = download_file_from_drive(file_id)  # Aquí llamas a la función de descarga
     return HttpResponse(file, content_type='application/octet-stream')
