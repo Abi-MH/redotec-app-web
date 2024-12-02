@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 from django.urls import path, include
 
 
+
 urlpatterns = [
     path('admin/', admin.site.urls), #panel de administrador que trae django
     path('', views.home, name='home'),

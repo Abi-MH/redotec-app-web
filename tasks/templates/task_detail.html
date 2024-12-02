@@ -30,23 +30,24 @@
             <!-- Mostrar documentos si están presentes -->
             <div class="mb-3">
                 {% if task.payment_pdf %}
-                    <p>
-                        <strong>PDF de Pago:</strong>
-                        <a href="{{ task.payment_pdf.url }}" download="pago_{{ task.companyname|slugify }}.pdf">Descargar PDF</a>
-                    </p>
-                {% endif %}
-                {% if task.payment_image %}
-                    <p>
-                        <strong>Imagen de Pago:</strong>
-                        <a href="{{ task.payment_image.url }}" download="imagen_pago_{{ task.companyname|slugify }}.jpg">Descargar Imagen</a>
-                    </p>
-                {% endif %}
-                {% if task.payment_xml %}
-                    <p>
-                        <strong>XML de Pago:</strong>
-                        <a href="{{ task.payment_xml.url }}" download="pago_{{ task.companyname|slugify }}.xml">Descargar XML</a>
-                    </p>
-                {% endif %}
+    <p>
+        <strong>PDF de Pago:</strong>
+        <a href="{{ task.payment_pdf.url }}" download="pago_{{ task.companyname|slugify }}.pdf">Descargar PDF</a>
+    </p>
+{% endif %}
+{% if task.payment_image %}
+    <p>
+        <strong>Imagen de Pago:</strong>
+        <a href="{{ task.payment_image.url }}" download="imagen_pago_{{ task.companyname|slugify }}.jpg">Descargar Imagen</a>
+    </p>
+{% endif %}
+{% if task.payment_xml %}
+    <p>
+        <strong>XML de Pago:</strong>
+        <a href="{{ task.payment_xml.url }}" download="pago_{{ task.companyname|slugify }}.xml">Descargar XML</a>
+    </p>
+{% endif %}
+
             </div>
             
             
@@ -98,6 +99,7 @@
                     <label for="payment_xml" class="form-label">XML de Pago (Opcional)</label>
                     <input type="file" name="payment_xml" id="payment_xml" class="form-control">
                 </div>
+                
 
                 <button type="submit" class="btn btn-primary w-100">Actualizar Tarea</button>
             </form>
