@@ -9,6 +9,8 @@ from django.http import HttpResponse
 from .models import Task
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from google_drive_utils import download_file_from_drive  # Asegúrate de que esta función exista
 
 # Create your views here.
 #def hello(request):
@@ -202,3 +204,9 @@ def update_task(request, task_id):
         form = TaskForm(instance=task)
 
     return render(request, 'task_detail.html', {'task': task, 'form': form})
+
+@login_required
+def download_file_from_drive(request, file_id):
+    # Lógica para descargar el archivo de Google Drive
+    file = download_file_from_drive(file_id)  # Aquí llamas a la función que descarga el archivo
+    return HttpResponse(file, content_type='application/octet-stream')
