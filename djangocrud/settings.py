@@ -20,6 +20,19 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+import os
+import base64
+import json
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Decodificar las credenciales desde la variable de entorno
+GOOGLE_DRIVE_CREDENTIALS_JSON = os.environ.get('GOOGLE_DRIVE_CREDENTIALS')
+if GOOGLE_DRIVE_CREDENTIALS_JSON:
+    credentials_path = os.path.join(BASE_DIR, 'google-drive-service-account.json')
+    with open(credentials_path, 'w') as f:
+        f.write(json.dumps(json.loads(base64.b64decode(GOOGLE_DRIVE_CREDENTIALS_JSON))))
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
