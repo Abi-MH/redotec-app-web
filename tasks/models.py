@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import os
+from .google_drive_utils import upload_to_drive  # Asegúrate de que esta función esté importada correctamente.
 
 class Task(models.Model):
     # Campos de la tabla
@@ -34,8 +35,18 @@ class Task(models.Model):
                 old_task.payment_xml.delete(save=False)
         except Task.DoesNotExist:
             pass
+
+        # Subir archivos a Google Drive y luego eliminar los archivos locales
+        if self.payment_pdf:
+            file_id_pdf = upload_to_drive(self.payment_pdf.path, self.payment_pdf.name)
+            self.payment_pdf = None  # Elimina el archivo local después de subirlo
+
+        if self.payment_image:
+            file_id_image = upload_to_drive(self.payment_image.path, self.payment_image.name)
+            self.payment_image = None  # Elimina el archivo local después de subirlo
+
+        if self.payment_xml:
+            file_id_xml = upload_to_drive(self.payment_xml.path, self.payment_xml.name)
+            self.payment_xml = None  # Elimina el archivo local después de subirlo
+
         super().save(*args, **kwargs)
-
-
-
-

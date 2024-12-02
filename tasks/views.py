@@ -13,6 +13,7 @@ from googleapiclient.http import MediaFileUpload
 from google.oauth2.service_account import Credentials
 import os
 from django.conf import settings
+from .google_drive_utils import upload_to_drive  # Asegúrate de que esta función esté importada correctamente.
 
 
 # Create your views here.
@@ -74,18 +75,38 @@ def create_task(request):
         })
     else:
         try:
-            form = TaskForm(request.POST, request.FILES)  # request.FILES añadido para archivos
-            new_task = form.save(commit=False)
-            new_task.user = request.user
-            new_task.save()
-            return redirect('tasks')
+            form = TaskForm(request.POST, request.FILES)  # request.FILES añadido para manejar archivos
+            if form.is_valid():
+                new_task = form.save(commit=False)
+                new_task.user = request.user
+
+                # Subir los archivos a Google Drive
+                if new_task.payment_pdf:
+                    file_id_pdf = upload_to_drive(new_task.payment_pdf.path, new_task.payment_pdf.name)
+                    new_task.payment_pdf = None  # Elimina el archivo local después de subirlo
+
+                if new_task.payment_image:
+                    file_id_image = upload_to_drive(new_task.payment_image.path, new_task.payment_image.name)
+                    new_task.payment_image = None  # Elimina el archivo local después de subirlo
+
+                if new_task.payment_xml:
+                    file_id_xml = upload_to_drive(new_task.payment_xml.path, new_task.payment_xml.name)
+                    new_task.payment_xml = None  # Elimina el archivo local después de subirlo
+
+                new_task.save()  # Guarda la tarea
+                return redirect('tasks')  # Redirige a la lista de tareas
+            else:
+                return render(request, 'create_task.html', {
+                    'form': form,
+                    'error': 'Por favor, ingresa campos válidos.'
+                })
         except ValueError:
             print(form.errors)  # Esto te mostrará los errores específicos en consola
             return render(request, 'create_task.html', {
                 'form': form,
-                'error': 'Por favor, ingresa campos válidos.'
+                'error': 'Hubo un error al procesar el formulario.'
             })
-
+            
 @login_required
 def task_detail(request, task_id):
     task = get_object_or_404(Task, pk=task_id)  # Obtén la tarea existente
