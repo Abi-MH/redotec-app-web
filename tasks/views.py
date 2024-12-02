@@ -13,8 +13,10 @@ from googleapiclient.http import MediaFileUpload
 from google.oauth2.service_account import Credentials
 import os
 from django.conf import settings
-from .google_drive_utils import upload_to_drive  # Asegúrate de que esta función esté importada correctamente.
-
+from .google_drive_utils import get_drive_service, upload_to_drive  # Asegúrate de que esta función esté importada correctamente.
+from googleapiclient.http import MediaIoBaseDownload
+import io
+from django.http import HttpResponse
 
 # Create your views here.
 #def hello(request):
@@ -226,6 +228,26 @@ def upload_to_drive(file_path, file_name, folder_id=None):
 
     return file.get('id')
 
+@login_required
+def download_file_from_drive(request, file_id):
+    service = get_drive_service()
+    try:
+        request = service.files().get_media(fileId=file_id)
+        fh = io.BytesIO()
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+
+        # Regresa el archivo como respuesta HTTP
+        fh.seek(0)
+        response = HttpResponse(fh, content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename="{file_id}.pdf"'
+        return response
+    except Exception as e:
+        print(f"Error al descargar el archivo: {e}")
+        return HttpResponse("Error al descargar el archivo.", status=500)
+    
 @login_required
 def set_file_public(file_id):
     """

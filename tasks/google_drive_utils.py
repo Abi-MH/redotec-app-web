@@ -9,6 +9,8 @@ import os
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 
+from tasks.views import set_file_public
+
 def get_drive_service():
     # Leer la ruta del archivo de credenciales desde la variable de entorno
     credentials_path = os.getenv('GOOGLE_DRIVE_CREDENTIALS_PATH')
@@ -23,8 +25,6 @@ def get_drive_service():
     # Construir el servicio de Google Drive
     service = build('drive', 'v3', credentials=creds)
     return service
-
-
 
 def upload_to_drive(file_path, file_name):
     try:
@@ -51,7 +51,13 @@ def upload_to_drive(file_path, file_name):
             body=file_metadata
         ).execute()
 
-        return file['id']  # Devuelve el ID del archivo subido
+        file_id = file['id']  # Devuelve el ID del archivo subido
+        print(f"Archivo subido con éxito. ID del archivo: {file_id}")  # Imprimir el ID del archivo
+
+        # Asegurarse de que el archivo sea público
+        set_file_public(file_id)
+
+        return file_id  # Retorna el ID del archivo subido
     except HttpError as error:
         print(f"An error occurred while uploading the file to Google Drive: {error}")
         return None
