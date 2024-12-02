@@ -8,6 +8,10 @@ from django.http import HttpResponse
 from .models import Task
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from .google_drive_utils import upload_to_drive
+import os
+
+
 
 # Create your views here.
 #def hello(request):
@@ -172,17 +176,21 @@ def task_list(request):
         'tasks_pending': tasks_pending,
         'tasks_completed': tasks_completed,
     })
-    
+
+@login_required
 def update_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id)
+    # Tu lógica actual para manejar formularios
+    if request.method == 'POST' and request.FILES:
+        uploaded_file = request.FILES['payment_pdf']  # Cambia según el archivo específico
+        local_file_path = f'media/{uploaded_file.name}'  # Guarda temporalmente
 
-    if request.method == 'POST':
-        form = TaskForm(request.POST, request.FILES, instance=task)
-        if form.is_valid():
-            form.save()  # Guarda la tarea actualizada
-            return redirect('task_detail', task.id)
+        with open(local_file_path, 'wb+') as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
 
-    else:
-        form = TaskForm(instance=task)
+        # Subir el archivo a Google Drive
+        drive_file_id = upload_to_drive(local_file_path, uploaded_file.name)
+        print(f'Archivo subido a Google Drive con ID: {drive_file_id}')
 
-    return render(request, 'task_detail.html', {'task': task, 'form': form})
+        # Limpia el archivo local si lo deseas
+        os.remove(local_file_path)

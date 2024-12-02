@@ -20,6 +20,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+GOOGLE_DRIVE_CREDENTIALS = os.path.join(BASE_DIR, 'google-drive-service-account.json')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
