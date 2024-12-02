@@ -70,23 +70,37 @@ def tasks_completed(request):
 @login_required
 def create_task(request):
     if request.method == 'POST':
-        form = TaskForm(request.POST, request.FILES)  # Asegúrate de que request.FILES esté en el formulario
+        form = TaskForm(request.POST, request.FILES)
         if form.is_valid():
             new_task = form.save(commit=False)
             new_task.user = request.user
 
-            # Subir los archivos a Google Drive
-            if new_task.payment_image:  # Verifica que haya un archivo antes de intentar cargarlo
-                file_id_image = upload_to_drive(new_task.payment_image.path, new_task.payment_image.name)
-                new_task.payment_image = None  # Elimina el archivo local después de subirlo
+            # Subir archivo PDF a Google Drive
+            if new_task.payment_pdf:
+                file_path = new_task.payment_pdf.path
+                file_name = new_task.payment_pdf.name
+                file_id_pdf = upload_to_drive(file_path, file_name)
+                # Puedes almacenar el file_id_pdf si lo necesitas en el modelo
+
+            # Subir archivo de imagen a Google Drive
+            if new_task.payment_image:
+                file_path = new_task.payment_image.path
+                file_name = new_task.payment_image.name
+                file_id_image = upload_to_drive(file_path, file_name)
+                # Puedes almacenar el file_id_image si lo necesitas en el modelo
+
+            # Subir archivo XML a Google Drive
+            if new_task.payment_xml:
+                file_path = new_task.payment_xml.path
+                file_name = new_task.payment_xml.name
+                file_id_xml = upload_to_drive(file_path, file_name)
+                # Puedes almacenar el file_id_xml si lo necesitas en el modelo
 
             new_task.save()
             return redirect('tasks')
-        else:
-            return render(request, 'create_task.html', {'form': form, 'error': 'Formulario no válido.'})
-
     return render(request, 'create_task.html', {'form': TaskForm()})
-           
+
+          
 @login_required
 def task_detail(request, task_id):
     task = get_object_or_404(Task, pk=task_id)  # Obtén la tarea existente
@@ -181,11 +195,8 @@ def task_list(request):
     })
 
 @login_required
-
-
 def upload_to_drive(file_path, file_name, folder_id=None):
-    """
-    Sube un archivo a Google Drive.
+    """ Sube un archivo a Google Drive.
     :param file_path: Ruta local del archivo.
     :param file_name: Nombre del archivo en Google Drive.
     :param folder_id: ID de la carpeta en Google Drive (opcional).
@@ -215,6 +226,7 @@ def upload_to_drive(file_path, file_name, folder_id=None):
 
     return file.get('id')
 
+@login_required
 def set_file_public(file_id):
     """
     Hace que un archivo sea público.

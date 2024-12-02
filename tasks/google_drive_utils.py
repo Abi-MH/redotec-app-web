@@ -5,13 +5,26 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.errors import HttpError
 
 # Asegúrate de que tu archivo de credenciales de Google esté configurado correctamente
+import os
+from googleapiclient.discovery import build
+from google.oauth2.service_account import Credentials
+
 def get_drive_service():
+    # Leer la ruta del archivo de credenciales desde la variable de entorno
+    credentials_path = os.getenv('GOOGLE_DRIVE_CREDENTIALS_PATH')
+    if not credentials_path:
+        raise ValueError("La variable de entorno GOOGLE_DRIVE_CREDENTIALS_PATH no está configurada correctamente.")
+    
+    # Crear credenciales desde el archivo
     creds = Credentials.from_service_account_file(
-        'path_to_your_google_service_account_credentials.json',
+        credentials_path,
         scopes=["https://www.googleapis.com/auth/drive.file"]
     )
+    # Construir el servicio de Google Drive
     service = build('drive', 'v3', credentials=creds)
     return service
+
+
 
 def upload_to_drive(file_path, file_name):
     try:
