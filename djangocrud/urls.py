@@ -40,7 +40,7 @@ urlpatterns = [
     path('tasks/<int:task_id>/delete', views.delete_task, name='delete_task'),
     path('logout/', views.signout, name='logout'),
     path('signin/', views.signin, name='signin'),
-    path('download/<str:file_id>/', views.download_file_from_drive, name='download_file'),
+    #path('download/<str:file_id>/', views.download_file_from_drive, name='download_file'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

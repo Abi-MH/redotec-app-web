@@ -3,7 +3,6 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from tasks.google_drive_utils import upload_to_drive, download_file_from_drive
 from .forms import TaskForm
 from django.http import HttpResponse
 from .models import Task
@@ -56,15 +55,6 @@ def create_task(request):
                 new_task = form.save(commit=False)
                 new_task.user = request.user
                 new_task.save()
-
-                # Subir los archivos a Google Drive
-                if new_task.payment_pdf:
-                    upload_to_drive(new_task.payment_pdf.path, new_task.payment_pdf.name)
-                if new_task.payment_image:
-                    upload_to_drive(new_task.payment_image.path, new_task.payment_image.name)
-                if new_task.payment_xml:
-                    upload_to_drive(new_task.payment_xml.path, new_task.payment_xml.name)
-
                 return redirect('tasks')
             else:
                 return render(request, 'create_task.html', {
@@ -168,9 +158,3 @@ def update_task(request, task_id):
     else:
         form = TaskForm(instance=task)
     return render(request, 'task_detail.html', {'task': task, 'form': form})
-
-@login_required
-def download_file_from_drive_view(request, file_id):
-    # Lógica para descargar el archivo de Google Drive
-    file = download_file_from_drive(file_id)  # Aquí llamas a la función de descarga
-    return HttpResponse(file, content_type='application/octet-stream')
