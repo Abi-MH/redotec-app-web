@@ -2,3 +2,4 @@ db.sqlite3
 venv
 __pycache__
 google-drive-service-account.json
+
